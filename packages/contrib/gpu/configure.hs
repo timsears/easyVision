@@ -9,6 +9,6 @@ arch = if buildArch == X86_64 then "/lib/lib64" else "/lib/lib32"
 main = do
     lib <- getEnv "EASYVISION"
     putStrLn $ "EASYVISION path: " ++ lib
-    writeFile "imagproc-gpu.buildinfo" $ 
+    writeFile "hVision-gpu.buildinfo" $ 
               "extra-lib-dirs: " ++ lib ++ arch ++"\n"
 

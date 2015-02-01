@@ -1,4 +1,4 @@
-Name:               hcontours
+Name:               hVision-contours
 Version:            0.2.0
 License:            AllRightsReserved
 License-file:       LICENSE
@@ -15,7 +15,7 @@ cabal-version:      >=1.2
 build-type:         Custom
 
 
-extra-tmp-files:        hcontours.buildinfo
+extra-tmp-files:        hVision-contours.buildinfo
 extra-source-files:     configure configure.hs
                         src/ImagProc/Contrib/Contours/struct.h
 

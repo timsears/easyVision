@@ -1,4 +1,4 @@
-Name:               imagproc-gpu
+Name:               hVision-gpu
 Version:            0.2.0
 License:            LGPL
 License-file:       LICENSE
@@ -18,7 +18,7 @@ build-type:         Custom
 
 extra-source-files:     src/ImagProc/GPU/SIFT/SiftGPU.h
 
-extra-tmp-files:        imagproc-gpu.buildinfo
+extra-tmp-files:        hVision-gpu.buildinfo
 
 library
     Build-Depends:      base >= 3 && < 5,
