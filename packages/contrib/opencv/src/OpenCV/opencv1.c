@@ -1,6 +1,6 @@
 #define CV_NO_BACKWARD_COMPATIBILITY
 
-#include <cv.h>
+#include <opencv/cv.h>
 #include <stdio.h>
 #include "wrappers.h"
 
@@ -45,4 +45,3 @@ void hough(IMGSZ(t),int fmax, int* fn, TSegment* res) {
     cvReleaseImageHeader(&ipl_t);
     cvReleaseMemStorage(&storage);
 }
-

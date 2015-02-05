@@ -1,6 +1,7 @@
 #define CV_NO_BACKWARD_COMPATIBILITY
 
-#include <cv.h>
+#include <opencv/cv.h>
+#include <opencv2/nonfree/features2d.hpp>
 #include <cstdio>
 
 using namespace std;
@@ -116,7 +117,7 @@ void surf( GIMS(char,t),
 
     double minHessian = 400;
     static SurfFeatureDetector detector( minHessian );
-    
+
     IPL(t,1)
 
     Mat frame;
@@ -145,4 +146,3 @@ void surf( GIMS(char,t),
 
 
 }
-
