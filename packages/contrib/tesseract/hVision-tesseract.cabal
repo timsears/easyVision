@@ -20,7 +20,7 @@ flag redir
     default:        False
 
 library
-    Build-Depends:      base, imagproc, process, temporary, filepath, directory
+    Build-Depends:      base, hVision, process, temporary, filepath, directory
 
     hs-source-dirs:     src
 
@@ -29,9 +29,8 @@ library
     ghc-prof-options:   -auto-all
 
     ghc-options:        -Wall
-    
+
     Extensions:         CPP
 
     if flag(redir)
         cpp-options: -DREDIR
-

@@ -18,7 +18,12 @@ module ImagProc.Contrib.ZBar (
 )
 where
 
-import ImagProc.Ipp.Core
+import Image
+import Image.Core
+import Image.Devel
+import Image.ROI
+import Image.Processing
+import Image.Processing.IPP
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.Ptr
@@ -67,4 +72,3 @@ app1G :: RawImage t -> ImageGray -> t
 app1G f (G im) = f (ptr im) (fi.step $ im) (g r1) (g r2) (g c1) (g c2)
   where
     g x = (fi . x . vroi) im
-

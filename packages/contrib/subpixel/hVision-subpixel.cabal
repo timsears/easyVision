@@ -1,4 +1,4 @@
-Name:               hVision-contours
+Name:               hVision-subpixel
 Version:            0.2.0
 License:            AllRightsReserved
 License-file:       LICENSE
@@ -7,7 +7,7 @@ Maintainer:         Alberto Ruiz <aruiz@um.es>
 Stability:          experimental
 Synopsis:           subpixel contour extraction
 Description:        interface to optimized C implementation of subpixel contour extraction
-  
+
 Category:           Image Processing
 tested-with:        GHC ==7.6.3
 
@@ -34,4 +34,3 @@ library
 
     extra-libraries:    contours m
     include-dirs:       src/ImagProc/Contrib/Contours
-

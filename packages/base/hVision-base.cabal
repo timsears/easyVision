@@ -43,7 +43,7 @@ library
 
     hs-source-dirs:     src
 
-    Exposed-modules:    
+    Exposed-modules:
                         --Util.Misc
                         --Util.Options
                         Util.LazyIO
@@ -75,8 +75,8 @@ library
                         Image.Capture
                         Image.Devel
                         Image.ROI
-    other-modules:
                         Image.Core
+    other-modules:
                         Image.Convert
                         Paths_hVision_base
                         Image.Types
@@ -102,4 +102,3 @@ library
                          src/Image/Capture/UVC/capture.c
 
     include-dirs:        src/Image/Capture/UVC/
-

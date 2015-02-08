@@ -21,8 +21,9 @@ module ImagProc.Contrib.Tesseract (
 where
 
 ----------------------------------------------------------------------
+import Image.Processing
 
-import ImagProc                         (ImageGray,saveGray)
+import Image.Processing                       -- (ImageGray,saveGray)
 import System.FilePath.Posix
 import System.Directory
 import System.IO.Temp
@@ -38,12 +39,12 @@ espeak text = do
 ----------------------------------------------------------------------
 
 tesseract :: ImageGray -> String
-tesseract im = 
-  unsafePerformIO $ withSystemTempFile "ocr.tif" $ 
-  (\f _h  -> do 
+  unsafePerformIO $ withSystemTempFile "tif" $
+tesseract im =
+  (\f _h  -> do
       let f' = replaceExtension f "txt"
           fbase = dropExtension f
-      saveGray f im
+      saveImage f im
       _ <- system $ "tesseract " ++ f ++ " "
 #ifdef REDIR
            ++ fbase ++ " -l eng   2> /dev/null"
@@ -54,7 +55,7 @@ tesseract im =
       removeFile f
       removeFile f'
       return s
-  )     
+  )
 
 ----------------------------------------------------------------------
 {-
@@ -68,6 +69,5 @@ ocrWindow sel = clickStatusWindow "Tesseract OCR" (mpSize 10) "" f g (const espe
         pixelCoordinates (size x')
         setColor' red; text2D 20 20 s'
     h '\n' = " <CR> "
-    h x = [x]       
+    h x = [x]
 -}
-

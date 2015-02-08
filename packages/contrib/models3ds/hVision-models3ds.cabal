@@ -19,17 +19,8 @@ build-type:         Simple
 extra-source-files:
 
 library
-    Build-Depends:      ev-gui >= 0.2,
-                        -- imagproc >= 0.1,
-                        -- camera >= 0.1,
-                        -- vision >= 0.1,
-                        -- hmatrix >= 0.8.3,
-                        -- prcv-util,
+    Build-Depends:      hVision-gui -any,
                         base >= 3 && < 5
-                        -- colour >= 2.2,
-                        -- OpenGL, GLUT,
-                        -- containers, process,
-                        -- template-haskell, ghc-prim
 
     hs-source-dirs:     src
 
@@ -40,9 +31,8 @@ library
     ghc-prof-options:   -auto-all
 
 --    ghc-options:        -Wall
-    
+
     extra-libraries:    3ds GLEW
-    
+
     C-sources:          src/EasyVision/GUI/C/model3ds.c
     CC-options:         -std=c99
-

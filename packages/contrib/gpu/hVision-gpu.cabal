@@ -22,8 +22,8 @@ extra-tmp-files:        hVision-gpu.buildinfo
 
 library
     Build-Depends:      base >= 3 && < 5,
-                        hmatrix >= 0.8.3, imagproc >= 0.1,
-                        ev-gui, GLUT, camera
+                        hmatrix >= 0.8.3, GLUT,
+                        hVision-base, hVision-gui
 
     hs-source-dirs:     src
 
@@ -40,4 +40,3 @@ library
     ghc-options:        -Wall -fno-warn-missing-signatures
 
     extra-libraries: siftgpu cudart Cg CgGL GLEW IL glut
-

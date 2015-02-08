@@ -96,7 +96,7 @@ loadRawPPM filename = do
           else do
             _ <- hGetBuf handle (starting im) (r*c*3)
             return ()
-            
+
         hClose handle
     return im
   where
@@ -164,7 +164,7 @@ saveImage (nameext -> ("","ppm")) x = savePPM Nothing x >> return ()
 saveImage (nameext -> ("ppm","")) x = savePPM Nothing x >> return ()
 saveImage (nameext -> ("",ext))   x = savePPM Nothing x >>= convertTo ext
 saveImage (nameext -> (name,""))  x
-   | name `elem` ["png","jpg","bmp"] = savePPM Nothing x >>= convertTo name
+   | name `elem` ["png","jpg","bmp","tif"] = savePPM Nothing x >>= convertTo name
    | otherwise = savePPM (Just (name++".ppm")) x >> return ()
 saveImage n@(nameext -> (_,"ppm")) x = savePPM (Just n) x >> return ()
 saveImage (nameext -> (name,ext)) x = savePPM (Just (name++".ppm")) x >>= convertTo ext
@@ -175,7 +175,7 @@ convertTo newext filename@(nameext -> (name,_)) = system' cmd
   where
     cmd = unwords ["convert",filename,newname,"&& rm", filename]
     newname = name++"."++newext
-  
+
 convert :: String -> FilePath -> IO FilePath
 convert newext filename@(nameext -> (name,_)) = system' cmd >> return newname
   where
@@ -187,4 +187,3 @@ system' cmd = do
     ok <- system cmd
     when (ok /= ExitSuccess) $ error $ "system " ++ cmd
     return ()
-
