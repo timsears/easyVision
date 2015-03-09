@@ -34,7 +34,7 @@ import System.IO.Temp
 import System.Process(system,readProcessWithExitCode)
 import Util.Options
 
-
+import Debug.Trace
 
 -- | Interface to mplayer (implemented using a pipe and the format yuv4mpeg).
 -- It admits the url shortcuts webcam1, webcam2, and firewire,
@@ -117,10 +117,16 @@ askSize :: FilePath -> IO (Maybe Size)
 -- ^ check if video exists and return frame size
 askSize fname = do
     (_,res,_) <- readProcessWithExitCode "mplayer" [(head . words) fname, "-nosound", "-vo", "null", "-frames", "1"] ""
+    print "askSize..."
+    print res
     let info = listToMaybe $ filter (isPrefixOf "VIDEO:") (lines res)
+    print "---------"
+    print info
     return (f `fmap` info)
   where
-    f = h . words . map g . (!!2) . words
+    -- TODO use exiftool or other less kludgy method
+    -- f = h . words . map g . (!!2) . words  -- mplayer
+    f = h . words . map g . (!!1) . words    -- mplayer2
     g 'x' = ' '
     g y = y
     h [a,b] = Size (read b) (read a)
