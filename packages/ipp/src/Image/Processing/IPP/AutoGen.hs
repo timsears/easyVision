@@ -148,7 +148,7 @@ newImageAsR2 roifun im1 im2 = do
     return $ setROI (roifun (roi im1) (roi im2)) r
 
 type Auto_2 p =  Src p (Src p (Dst p (IO CInt))) -> String
-              -> (ROI-> ROI -> ROI) 
+              -> (ROI-> ROI -> ROI)
               -> (ROI-> ROI -> ROI)
               -> (ROI-> ROI -> ROI)
               -> Image p -> Image p -> IO (Image p)
@@ -173,12 +173,14 @@ auto_2_8u_C1R = auto_2
 auto_2_8u_C3R :: Auto_2 Word24
 auto_2_8u_C3R = auto_2
 
-
 auto_2_32f_C1R :: Auto_2 Float
 auto_2_32f_C1R = auto_2
 
 auto_2_8u_C1RSfs :: Auto_2 Word8
 auto_2_8u_C1RSfs = auto_2_8u_C1R
+
+
+
 
 {-
 
@@ -193,9 +195,26 @@ auto_11_32f_C1IR f msg _ (F im1) (F im2) = do
 
 auto_11_8u_C1IR f msg _ (G im1) (G im2) = do
     cr2i f msg im1 im2
-    
+
 -}
 
-auto_11_32f_C1IR = error $ "FIXME auto_11_32f_C1IR"
-auto_11_8u_C1IR = error $ "FIXME auto_11_8u_C1IR"
+-- auto_11_32f_C1IR = error $ "FIXME auto_11_32f_C1IR"
+-- auto_11_8u_C1IR = error $ "FIXME auto_11_8u_C1IR"
 
+--- Supports binary operation with in-place result returned in the second argument
+--- These functions are used downstream in the maxEvery and minEvery functions.
+type Auto_2i p = Src p (Dst p (IO CInt)) -> String -> Image p -> Image p -> IO (Image p)
+
+auto_2i :: Storable p => Auto_2i p
+auto_2i f msg im1 im2 = do
+    cr2i f msg im1 im2
+    return im2
+
+cr2i f msg im1 im2 = withImage im1 $ withImage im2 $ do
+    f // src im1 (roi im1) // dst im2 // checkIPP msg -- [im1,im2]
+
+auto_11_32f_C1IR :: Auto_2i Float
+auto_11_32f_C1IR = auto_2i
+
+auto_11_8u_C1IR :: Auto_2i Word8
+auto_11_8u_C1IR = auto_2i

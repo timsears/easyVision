@@ -60,7 +60,7 @@ ioAbs_32f_C1R  = {-# SCC "ippiAbs_32f_C1R" #-} auto_1_32f_C1R f "ippiAbs_32f_C1R
 ioSqrt_32f_C1R  = {-# SCC "ippiSqrt_32f_C1R" #-} auto_1_32f_C1R f "ippiSqrt_32f_C1R"
     where f pSrc srcStep pDst dstStep roiSize = ippiSqrt_32f_C1R pSrc srcStep pDst dstStep roiSize
 
-{- | 
+{- |
     Computes magnitude of elements of an image in RCPack2D packed format. -}
 ioMagnitudePack_32f_C1R  = {-# SCC "ippiMagnitudePack_32f_C1R" #-} auto_1_32f_C1R f "ippiMagnitudePack_32f_C1R"
     where f pSrc srcStep pDst dstStep dstRoiSize = ippiMagnitudePack_32f_C1R pSrc srcStep pDst dstStep dstRoiSize

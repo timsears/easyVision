@@ -59,11 +59,11 @@ mkIdIPInt32f f a b = unsafePerformIO $ do
     _ <- f undefined (setROI r a) x
     return x
 
-mkIdIPInt8u f a b = unsafePerformIO $ do
-    let r = intersection (roi a) (roi b)
-    x <- ioCopy_8u_C1R (const r) b
-    _ <- f undefined (setROI r a) x
-    return x
+-- mkIdIPInt8u f a b = unsafePerformIO $ do
+--     let r = intersection (roi a) (roi b)
+--     x <- ioCopy_8u_C1R (const r) b
+--     _ <- f undefined (setROI r a) x
+--     return x
 
 
 -- | image scaling
@@ -294,7 +294,7 @@ filterMedian r im | r <= 0    = im
     m = 2*r+1
     s = IppiSize (fi m) (fi m)
     p = IppiPoint (fi r) (fi r)
-    
+
 
 -- | High pass filter
 highPass8u :: Mask -> Image Word8 -> Image Word8
@@ -341,15 +341,14 @@ minEvery32f = mkIdIPInt32f ioMinEvery_32f_C1IR
 
 -- | pixelwise maximum of two images
 maxEvery8u :: Image Word8 -> Image Word8 -> Image Word8
-maxEvery8u = mkIdIPInt8u ioMaxEvery_8u_C1IR
+maxEvery8u a b = unsafePerformIO $ ioMaxEvery_8u_C1IR a b
 
 -- | pixelwise minimum of two images
 minEvery8u :: Image Word8 -> Image Word8 -> Image Word8
-minEvery8u = mkIdIPInt8u ioMinEvery_8u_C1IR
+minEvery8u a b = unsafePerformIO $ ioMinEvery_8u_C1IR a b
 
 ------------------------------------------------------
 
 undistortRadial8u fx fy cx cy k1 k2 = mkId (ioUndistortRadial_8u_C1R fx fy cx cy k1 k2 nullPtr)
 undistortRadial8u3 fx fy cx cy k1 k2 = mkId (ioUndistortRadial_8u_C3R fx fy cx cy k1 k2 nullPtr)
 undistortRadial32f fx fy cx cy k1 k2 = mkId (ioUndistortRadial_32f_C1R fx fy cx cy k1 k2 nullPtr)
-
