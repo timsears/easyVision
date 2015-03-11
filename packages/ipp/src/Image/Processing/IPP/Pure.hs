@@ -332,11 +332,11 @@ erode3x3 = mkShrink (1,1) ioErode3x3_8u_C1R
 
 -- | pixelwise maximum of two images
 maxEvery32f :: Image Float -> Image Float -> Image Float
-maxEvery32f = mkIdIPInt32f ioMaxEvery_32f_C1IR
+maxEvery32f a b = unsafePerformIO $ ioMaxEvery_32f_C1IR a b
 
 -- | pixelwise minimum of two images
 minEvery32f :: Image Float -> Image Float -> Image Float
-minEvery32f = mkIdIPInt32f ioMinEvery_32f_C1IR
+minEvery32f a b = unsafePerformIO $ ioMinEvery_32f_C1IR a b
 
 
 -- | pixelwise maximum of two images
