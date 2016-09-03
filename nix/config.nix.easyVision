@@ -4,8 +4,6 @@ allowUnfree = true;
 
 allowBroken = true;
 
-provideOldHaskellAttributeNames = false;
-
 packageOverrides = super: let self = super.pkgs; in
 rec {
 haskellngPackages = super.haskellngPackages.override { overrides = localPackages;};

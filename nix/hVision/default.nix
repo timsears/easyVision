@@ -9,7 +9,7 @@
 , hVision-gui
 , hVision-ipp
 , imagemagickBig
-, mplayer2
+, mplayer
 , perlPackages
 , easyVisionSrc
 }:
@@ -29,7 +29,7 @@ mkDerivation {
     hVision-ipp
     # These are really run-time deps, but they need to go here and not in buildTools
     # in order to propagate downstream
-    mplayer2
+    mplayer
     imagemagickBig
   ];
   jailbreak = true;
