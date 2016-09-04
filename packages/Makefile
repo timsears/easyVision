@@ -1,23 +1,34 @@
-pkgs=tools base gui geometry classifier contours custom contrib/examples contrib/opencv contrib/clipping contrib/subpixel ipp hvision devel
+IPPICV='http://sourceforge.net/projects/opencvlibrary/files/3rdparty/ippicv/ippicv_linux_20141027.tgz'
+
+pkgs=tools base gui geometry classifier contours/contours ip/custom contrib/examples ip/opencv contours/clipping contours/hcontours contours/CLK ip/ippicv ip/ipp hvision devel
+
+getippicv:
+	if [ ! -e ../lib/ippicv_lnx ]; then   \
+	  cd ../lib;                          \
+	  wget $(IPPICV);                     \
+	  tar xzvf ippicv_linux_20141027.tgz; \
+	  rm ippicv_linux_20141027.tgz;       \
+	fi
+
+
+selpkgs=contours/contours contours/clipping contours/hcontours contours/CLK
+
+cabalcmd =                         \
+      for p in $(1); do            \
+	  if [ -e $$p ]; then          \
+	    cd $$p; cabal $(2) ; cd -; \
+	  fi;                          \
+	done
 
 all:
-	for p in $(pkgs); do \
-	  if [ -e $$p ]; then \
-	    cd $$p; cabal install --force-reinstall --enable-documentation ; cd -; \
-	  fi; \
-	done
+	$(call cabalcmd, $(pkgs), install --force-reinstall --enable-documentation)
+
+selected:
+	$(call cabalcmd, $(selpkgs), install --force-reinstall)
 
 fast:
-	for p in $(pkgs); do \
-	  if [ -e $$p ]; then \
-	    cd $$p; cabal install --force-reinstall ; cd -; \
-	  fi; \
-	done
+	$(call cabalcmd, $(pkgs), install --force-reinstall)
 
-local:
-	for p in $(pkgs); do \
-	  if [ -e $$p ]; then \
-	    cd $$p; cabal sdist && uploadlocal ; cd -; \
-	  fi; \
-	done
+clean:
+	$(call cabalcmd, $(pkgs), clean)
 

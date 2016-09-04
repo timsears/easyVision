@@ -6,7 +6,7 @@ module Util.Statistics(
 ) where
 
 
-import Numeric.LinearAlgebra.HMatrix hiding (step, idxs)
+import Numeric.LinearAlgebra.HMatrix hiding (step,idxs)
 import Data.List(sortBy, sort)
 import System.Random
 import qualified Data.Vector as V
@@ -133,7 +133,7 @@ infn :: Int -> Int -> Double -> [V]
 infn seed n σ = concatMap g seeds
   where
     seeds = randoms (mkStdGen seed)
-    g s = toRows $ gaussianSample s 1000 (vector (replicate n 0)) (diagl (replicate n σ))
+    g s = toRows $ gaussianSample s 1000 (vector (replicate n 0)) (trustSym $ diagl (replicate n σ))
 
 infu :: Int -> [ℝ]
 infu seed = randomRs (0,1) (mkStdGen seed) :: [ℝ]

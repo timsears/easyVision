@@ -26,7 +26,6 @@ import qualified Data.Array as A
 import Foreign.Storable(Storable)
 import Data.Array(listArray,(!))
 import qualified Data.Vector as V
---import Data.Packed.Development((//))
 import Numeric.LinearAlgebra.Devel((//))
 
 
@@ -192,7 +191,7 @@ angleDiff x y = min (abs (x-y)) (abs (opos x - opos y))
 
 ----------------------------------------------------------------------
 
---norMax :: (Num (c e), Container c e) => e -> c e -> c e
+norMax :: (Num (c e), Fractional e, Container c e) => e -> c e -> c e
 norMax s m = m * scalar (s / v)
   where
     p = maxIndex (abs m)

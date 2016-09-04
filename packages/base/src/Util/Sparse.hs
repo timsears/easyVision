@@ -3,11 +3,11 @@
 module Util.Sparse(
     MatrixBlock(..), SparseMatrix(..), SMat,
     mkSparse, toDense,
-    bMul,bTrans, blockDiag,
-    blockDiagSolveLU
+    bMul,bTrans, blockDiag
+-- ,    blockDiagSolveLU
 ) where
 
-import Numeric.LinearAlgebra hiding (i)
+import Numeric.LinearAlgebra.HMatrix hiding (mkSparse, toDense)
 --import qualified Data.Map as Map
 import qualified Data.Array as A
 import Data.List
@@ -39,7 +39,7 @@ mkSparse' asc = SparseMatrix {srows = r, scols = c, sat = at }
           c = succ . maximum . map snd . Map.keys $ m
 -}
 
-toDense :: (Container Vector t, Num (Vector t))
+toDense :: (Container Vector t, Num t, Num (Vector t))
         => SparseMatrix t -> Matrix t
 toDense sp = fromBlocks [[f (sat sp (i,j)) | j<-[0..c-1]] | i<- [0..r-1]]
     where r = srows sp
@@ -48,12 +48,12 @@ toDense sp = fromBlocks [[f (sat sp (i,j)) | j<-[0..c-1]] | i<- [0..r-1]]
           f (Dense x) = x
           f (Diagonal l) = blockDiag l
 
-spTrans :: MatrixBlock t -> MatrixBlock t
+spTrans :: Numeric t => MatrixBlock t -> MatrixBlock t
 spTrans Zero = Zero
-spTrans (Dense x) = Dense (trans x)
-spTrans (Diagonal l) = Diagonal (map trans l)
+spTrans (Dense x) = Dense (tr x)
+spTrans (Diagonal l) = Diagonal (map tr l)
 
-spAdd :: (Container Vector t, Num (Vector t))
+spAdd :: (Container Vector t, Num t, Num (Vector t))
       => MatrixBlock t -> MatrixBlock t -> MatrixBlock t
 spAdd Zero x = x
 spAdd x Zero = x
@@ -65,7 +65,7 @@ spSub x Zero = x
 spSub x y = spew (-) x y
 -}
 
-spew :: (Container Vector t1, Num (Vector t1), Container Vector t, Num (Vector t))
+spew :: (Container Vector t1, Num t1, Num (Vector t1), Container Vector t, Num t, Num (Vector t))
      => (Matrix t -> Matrix t1 -> Matrix t2)
     -> MatrixBlock t
     -> MatrixBlock t1
@@ -76,7 +76,7 @@ spew op (Diagonal l) (Dense x) = Dense (blockDiag l `op` x)
 spew op (Diagonal x) (Diagonal y) = Diagonal (zipWith op x y) -- allow different sizes?
 spew _ _ _ = impossible "spew in Sparse"
 
-spMul :: (Product t)
+spMul :: (Numeric t)
       => MatrixBlock t -> MatrixBlock t -> MatrixBlock t
 spMul Zero _ = Zero
 spMul _ Zero = Zero
@@ -87,11 +87,11 @@ spMul (Diagonal x) (Diagonal y) = Diagonal (zipWith (<>) x y) -- allow different
 
 -------------------------------
 
-bTrans :: SparseMatrix t -> SparseMatrix t
+bTrans :: Numeric t => SparseMatrix t -> SparseMatrix t
 bTrans (SparseMatrix r c at) = SparseMatrix c r at'
     where at' (i,j) = spTrans (at (j,i))
 
-bMul :: (Product t, Container Vector t, Num (Vector t))
+bMul :: (Numeric t, Num (Vector t))
      => SparseMatrix t -> SparseMatrix t -> SparseMatrix t
 bMul (SparseMatrix rx cx atx) (SparseMatrix _ry cy aty) = mkSparse l where
     l = [((i,j), foldl' spAdd Zero [atx (i,k) `spMul` aty (k,j) | k<-ks])| i<-is, j<-js]
@@ -101,7 +101,7 @@ bMul (SparseMatrix rx cx atx) (SparseMatrix _ry cy aty) = mkSparse l where
 
 --------------------------------------------
 
-blockDiag :: (Container Vector t, Num (Vector t)) 
+blockDiag :: (Container Vector t, Num t, Num (Vector t)) 
           => [Matrix t] -> Matrix t
 blockDiag bs = fromBlocks [ [ f i j | i<-ns ] | j<-ns ] where
     ns = [ 0 .. length bs -1]
@@ -111,10 +111,10 @@ blockDiag bs = fromBlocks [ [ f i j | i<-ns ] | j<-ns ] where
 --blockDiagSolve :: (Field t) => [Matrix t] -> Matrix t -> Matrix t
 --blockDiagSolve bs m = blockDiagOp linearSolve bs m
 
-blockDiagSolveLU :: (Field t) => [(Matrix t, [Int])] -> Matrix t -> Matrix t
-blockDiagSolveLU lus m = blockDiagOpG (rows.fst) luSolve lus m
+--blockDiagSolveLU :: (Field t) => [(Matrix t, [Int])] -> Matrix t -> Matrix t
+--blockDiagSolveLU lus m = blockDiagOpG (rows.fst) luSolve lus m
 
-blockDiagMul :: (Product t) => [Matrix t] -> Matrix t -> Matrix t
+blockDiagMul :: (Numeric t) => [Matrix t] -> Matrix t -> Matrix t
 blockDiagMul bs m = blockDiagOp (<>) bs m
 
 blockDiagOp :: (Element t2, Element t1) 

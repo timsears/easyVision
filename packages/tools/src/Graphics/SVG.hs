@@ -29,7 +29,7 @@ module Graphics.SVG(
     plotFullMark
 )where
 
-import Numeric.LinearAlgebra.HMatrix hiding (col,cols,tr,R,range)
+import Numeric.LinearAlgebra.HMatrix hiding (col,cols,tr,range)
 ---(scalar,fromList,toList,linspace,Vector,minElement,maxElement)
 --import Util.Geometry(Point(..),datMat)
 import Text.Printf
@@ -88,7 +88,7 @@ mkSVG w h = header w h . unlines
 header :: Int -> Int -> String -> String
 header w h x = unlines
     [ "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>" 
-    , r "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' width='W' height='H' >"
+    , r "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' viewBox='0 0 W H' >"
     , x
     ,"</svg>"
     ]
@@ -786,7 +786,7 @@ fromY :: R -> (V,V) -> (V,V)
 fromY z (x,y) = (vjoin [scalar(x!0),x,scalar(x!(size x-1))]
                 ,vjoin [scalar z,y, scalar z])
 
-type R = Double
+--type R = Double
 type V = Vector Double
 --type M = Matrix Double
 

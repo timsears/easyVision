@@ -1,0 +1,41 @@
+Name:               hclipping
+Version:            0.2.0
+License:            GPL
+License-file:       LICENSE
+Author:             PARP Research Group <http://perception.inf.um.es>, University of Murcia, Spain.
+Maintainer:         Alberto Ruiz <aruiz@um.es>
+Stability:          experimental
+Homepage:           http://perception.inf.um.es/easyVision/
+Synopsis:           polygon clipping
+Description:        polygon clipping
+
+Category:           Math
+tested-with:        GHC ==6.10.4, GHC ==6.12.1, GHC ==7.4
+
+cabal-version:      >=1.2
+build-type:         Simple
+
+extra-source-files:     src/Contours/Clipping/clipping.h
+
+extra-tmp-files:
+
+library
+    Build-Depends:      base >= 3 && < 5, hmatrix, hVision-base, hVision-contours,
+                        artools
+
+    hs-source-dirs:     src
+
+    Exposed-modules:    Contours.Clipping
+
+    other-modules:      Contours.ClipRaw
+
+    c-sources:          src/Contours/Clipping/clipping.c
+                        
+    include-dirs:       src/Contours/Clipping
+
+    cc-options:         -O4 -msse2 -Wall
+
+    ghc-prof-options:   -auto-all
+
+    ghc-options:        -Wall
+

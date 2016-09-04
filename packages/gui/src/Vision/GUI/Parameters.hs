@@ -14,7 +14,7 @@ A \'global\' parameter list with its own control window. See the example warp.hs
 -----------------------------------------------------------------------------
 
 module Vision.GUI.Parameters (
-     listParam, realParam, floatParam, percent, intParam, stringParam,
+     listParam, realParam, floatParam, percent, intParam, stringParam, boolParam,
      autoParam, MkParam, ParamRecord(..)
 ) where
 
@@ -29,7 +29,6 @@ import GHC.Float
 import Numeric
 import Data.List as L
 import Control.Monad(ap,join)
-import Control.Applicative((<$>),(<*>))
 import Util.Options(getOption,optionString)
 import Util.LazyIO(Generator)
 
@@ -48,9 +47,9 @@ createParameters :: String -- ^ window name
                  -> IO (EVWindow (Map String Parameter))
 createParameters winname pref ops = do
     ops' <- zip (map fst ops) `fmap` mapM (uncurry (defcomlin pref)) ops
-    let sz@(Size ih iw) = Size (2+length ops * sizePar) 200
+    let sz@(Size ih _iw) = Size (2+length ops * sizePar) 200
         nops = length ops - 1
-        which h y = (fromIntegral y `div` round (fromIntegral sizePar * fromIntegral h / fromIntegral ih)) `min` nops
+        which h y = (fromIntegral y `div` round (fromIntegral sizePar * fromIntegral h / fromIntegral ih :: Double)) `min` nops
     w <- evWindow (Map.fromList ops') winname sz (kbdopts which kbdQuit)
              
     displayCallback $= do
@@ -88,7 +87,7 @@ createParameters winname pref ops = do
 
     kbdopts which def opts = kbd where
         kbd (MouseButton WheelUp) Down _ (Position _x y) = do
-            Size h w <- evSize <$> get windowSize
+            Size h _w <- evSize <$> get windowSize
             m <- getW opts
             let s' = keys m
             let s = (s' !! which h y)
@@ -97,7 +96,7 @@ createParameters winname pref ops = do
             putW opts m'
             postRedisplay Nothing
         kbd (MouseButton WheelDown) Down _ (Position _x y) = do
-            Size h w <- evSize <$> get windowSize
+            Size h _w <- evSize <$> get windowSize
             m <- getW opts
             let s' = keys m
             let s = (s' !! which h y)
@@ -111,17 +110,15 @@ createParameters winname pref ops = do
             let s' = keys m
             let s = (s' !! which h y)
             let v = m!s 
-            let m' = Map.insert s (setpo (round (fromIntegral x * 200 / fromIntegral w)) v) m
+            let m' = Map.insert s (setpo (round (fromIntegral x * 200 / fromIntegral w :: Double)) v) m
             putW opts m'
             postRedisplay Nothing
         kbd a b c d = def a b c d
 
 
-type Parameters = IORef (Map String Parameter)
-
 data Parameter = Percent Int
                | RealParam Double Double Double
---               | FlagParam Bool
+               | FlagParam Bool
                | IntParam Int Int Int
                | StringParam { sPos :: Int, sVal :: String, sList :: [String] }
                | RLParam { rVal:: Double,
@@ -166,6 +163,9 @@ floatParam a b c = realParam (float2Double a) (float2Double b) (float2Double c)
 intParam :: Int -> Int -> Int -> Parameter
 intParam = IntParam
 
+boolParam :: Bool -> Parameter
+boolParam = FlagParam
+
 incre :: Parameter -> Parameter
 incre (Percent v)   = Percent (min 100 (v+1))
 incre (RealParam v a b)   = RealParam (min b (v+(b-a)/100)) a b
@@ -174,6 +174,8 @@ incre (x@RLParam {}) = x {rVal = rList x !! k, rPos = k}
     where k = min (rLength x -1) (rPos x + 1)
 incre (x@StringParam {}) = x {sVal = sList x !! k, sPos = k}
     where k = (sPos x + 1) `rem` length (sList x)
+incre (FlagParam v)   = FlagParam (not v)
+
 
 decre :: Parameter -> Parameter
 decre (Percent v)   = Percent (max 0 (v-1))
@@ -183,6 +185,7 @@ decre (x@RLParam {}) = x {rVal = rList x !! k, rPos = k}
     where k = max 0 (rPos x - 1)
 decre (x@StringParam {}) = x {sVal = sList x !! k, sPos = k}
     where k = max 0 (sPos x - 1)
+decre (FlagParam v)   = FlagParam (not v)
 
 setpo :: GLint -> Parameter -> Parameter
 setpo p (Percent _) = Percent (fromIntegral p `div` 2)
@@ -192,6 +195,7 @@ setpo p (x@RLParam {}) = x {rVal = rList x !! k, rPos = k}
     where k = round $ (fromIntegral $ rLength x) * fromIntegral p / (200::Double)
 setpo p (x@StringParam {}) = x {sVal = sList x !! k, sPos = k}
     where k = round $ (fromIntegral $ length $ sList x) * fromIntegral p / (200::Double)
+setpo _ (FlagParam v) = FlagParam (not v)
 
 posi :: Parameter -> Int
 posi (Percent v)    = v
@@ -200,6 +204,7 @@ posi (IntParam v a b)   = round $ 100*fromIntegral (v-a)/(fromIntegral(b-a) :: D
 posi (RLParam {rPos = i, rLength = l}) = (200*i) `div` (2*(l-1))
 posi (StringParam {sPos = i, sList = list}) = (200*i) `div` (2*(l-1))
     where l = length list
+posi (FlagParam v) = if v then 100 else 0
 
 info :: Parameter -> String
 info (Percent v) = show v ++ "%"
@@ -207,6 +212,7 @@ info (RealParam v _ _) = showFFloat (Just 2) v ""
 info (RLParam {rVal = v}) = showFFloat (Just 2) v ""
 info (IntParam v _ _) = show v
 info (StringParam {sVal = s}) = s
+info (FlagParam v) = show v
 
 class Param a where
     param :: Parameter -> a
@@ -221,6 +227,10 @@ instance Param Int where
     param (IntParam v _ _) = v
     param (StringParam {sPos = k}) = k
     param v = error $ "wrong param conversion from "++ show v ++ " to Int"
+
+instance Param Bool where
+    param (FlagParam v) = v
+    param v = error $ "wrong param conversion from "++ show v ++ " to Bool"
 
 
 instance Param Double where
@@ -243,7 +253,7 @@ defcomlin :: String -> String -> Parameter -> IO Parameter
 
 defcomlin pref name (Percent x) = Percent <$> getOption ("--"++pref++name) x
 defcomlin pref name (RealParam x a b) = RealParam <$> getOption ("--"++pref++name) x <*> return a <*> return b
---defcomlin pref name (FlagParam b) = FlagParam <$> getOption ("--"++pref++name) b
+defcomlin pref name (FlagParam b) = FlagParam <$> getOption ("--"++pref++name) b
 defcomlin pref name (IntParam x a b) = IntParam <$> getOption ("--"++pref++name) x <*> return a <*> return b
 
 defcomlin pref name (RLParam v _p mn mx l n) = do
@@ -262,16 +272,10 @@ defcomlin pref name (StringParam _p s list) = do
 
 -------------------------------------------------------
 
-instance Lift Double where
-    lift = liftD
-
-liftD :: Double -> ExpQ
-liftD = litE . rationalL . toRational
-
 instance Lift Parameter where
     lift (Percent x) = conE 'Percent `appE` lift x
     lift (RealParam v a b) = conE 'RealParam `appE` lift v `appE` lift a `appE` lift b
---    lift (FlagParam x) = conE 'FlagParam `appE` lift x
+    lift (FlagParam x) = conE 'FlagParam `appE` lift x
     lift (IntParam v x y) = conE 'IntParam `appE` lift v `appE` lift x `appE` lift y
     lift (StringParam p v l) = conE 'StringParam `appE` lift p `appE` lift v `appE` lift l
     lift (RLParam v p mn mx l n) = conE 'RLParam
@@ -280,6 +284,7 @@ instance Lift Parameter where
 
 val :: Parameter -> ExpQ
 val (Percent x) = lift x
+val (FlagParam x) = lift x
 val (RealParam x _a _b) = lift x
 val (IntParam x _a _b) = lift x
 val (RLParam v _p _mn _mx _l _n) = lift v
@@ -287,6 +292,7 @@ val (StringParam _p s _list) = lift s
 
 optfun :: String -> String -> Parameter -> ExpQ
 optfun pref name (Percent x) = varE 'getOption `appE` lp pref name `appE` lift x
+optfun pref name (FlagParam x) = varE 'getOption `appE` lp pref name `appE` lift x
 optfun pref name (RealParam x _a _b) = varE 'getOption `appE` lp pref name `appE` lift x
 optfun pref name (IntParam x _a _b) = varE 'getOption `appE` lp pref name `appE` lift x
 optfun pref name (RLParam v _p _mn _mx _l _n) = varE 'getOption `appE` lp pref name `appE` lift v

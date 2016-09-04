@@ -24,19 +24,23 @@ import Image.Core
 import Foreign.Ptr ( plusPtr )
 import Foreign.Marshal ( copyBytes )
 import Control.Monad ( when )
-import Control.Applicative ( (<$>) )
 import System.IO
 import System.Exit ( ExitCode(ExitSuccess) )
 import System.Process ( system )
 import Data.List ( isSuffixOf, intercalate )
 import Data.List.Split ( splitOn )
-import Data.Packed.Development
-import Numeric.LinearAlgebra ( Matrix, rows, cols )
+import Numeric.LinearAlgebra.HMatrix ( Matrix, rows, cols )
+import Numeric.LinearAlgebra.Devel
 import Data.Char ( toLower )
 import qualified Data.ByteString as BS ( writeFile, append )
 import qualified Data.ByteString.Char8 as BSC ( pack )
 import Util.Time ( formattedTime )
 import System.IO.Unsafe(unsafePerformIO)
+
+infixl 1 #
+(#) :: TransArray c => TransRaw c b -> c -> b
+a # b = applyRaw a b
+{-# INLINE (#) #-}
 
 ----------------------------------------------------------------------
 
@@ -48,7 +52,7 @@ mat2img m = unsafePerformIO $ do
         g r _ p = do
             sequence_ $ zipWith (f p) ps [0..fromIntegral r-1]
             return 0
-    app1 g mat (cmat m) "mat2img"
+    g # (cmat m) #|"mat2img"
     return im
 
 
@@ -62,7 +66,7 @@ img2mat im = unsafePerformIO $ do
             return 0
     m <- createMatrix RowMajor r c
     withImage im $ do
-        app1 g mat (cmat m) "img2mat"
+        g # (cmat m) #|"img2mat"
     return m
 
 ----------------------------------------------------------------------

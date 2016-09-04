@@ -14,9 +14,9 @@ module Image.Processing.Generic(
 ) where
 
 import Image
-import Image.Devel
+import Image.Devel hiding (constantImage)
 import Image.Processing.IPP
-import Numeric.LinearAlgebra(Matrix, toLists, (<>), inv, rows, cols)
+import Numeric.LinearAlgebra.HMatrix(Matrix, toLists, (<>), inv, rows, cols)
 import Control.Arrow((&&&))
 import Foreign(Word8,Word16)
 import Image.Processing.Custom(getPoints32f,getPoints8u)

@@ -47,22 +47,25 @@ module Util.Geometry
   -- * Derived types
 
     Polyline(..), Segment(..),
-    interPoint, normalSegment, rotPoint,
+    interPoint, normalSegment, rotPoint, localFrame, localCoords,
     segmentLength, distPoints, bounding, cosAngleSegments,
     asSegments, isLeft,
-    segmentIntersection, intersectionLineSegment,
+    segmentIntersection, segmentIntersection',
+    intersectionLineSegment,
+    bisector, areaTriang,
     Polygon(..),
     orientation, polygonSides,
-    DMat
+    KeyPoint(..),
+    DMat,
+    Trust(..)
 ) where
 
 import Util.Small
 import Util.Misc(Mat,Vec)
-import Numeric.LinearAlgebra hiding ((|>))
+import Numeric.LinearAlgebra.HMatrix hiding ((|>))
 import Data.Function(on)
 import Foreign.Storable
 import Foreign.Ptr
-import Control.Applicative
 import qualified Numeric.LinearAlgebra.Tensor as T
 import qualified Numeric.LinearAlgebra.Array.Util as UT
 import qualified Numeric.LinearAlgebra.Exterior as E
@@ -89,7 +92,7 @@ instance Storable Point where
 instance Shaped Point where
     type Shape Point = Dim2 Double
     toArray (Point x1 x2) = vec2 x1 x2
-    unsafeFromArray v = Point (v@>0) (v@>1)
+    unsafeFromArray v = Point (v!0) (v!1)
 
 
 -- | 2D displacement
@@ -103,7 +106,7 @@ data HPoint = HPoint !Double !Double !Double deriving (Eq, Show, Read)
 instance Shaped HPoint where
     type Shape HPoint = Dim3 Double
     toArray (HPoint x y w) = vec3 x y w
-    unsafeFromArray v = HPoint (v@>0) (v@>1) (v@>2)
+    unsafeFromArray v = HPoint (v!0) (v!1) (v!2)
 
 
 -- | inhomogenous 3D point
@@ -112,7 +115,7 @@ data Point3D = Point3D !Double !Double !Double deriving (Eq, Show, Read)
 instance Shaped Point3D where
     type Shape Point3D = Dim3 Double
     toArray (Point3D x y w) = vec3 x y w
-    unsafeFromArray v = Point3D (v@>0) (v@>1) (v@>2)
+    unsafeFromArray v = Point3D (v!0) (v!1) (v!2)
 
 
 -- | homogenous 3D point
@@ -121,7 +124,7 @@ data HPoint3D = HPoint3D !Double !Double !Double !Double deriving (Eq, Show, Rea
 instance Shaped HPoint3D where
     type Shape HPoint3D = Dim4 Double
     toArray (HPoint3D x y z w) = vec4 x y z w
-    unsafeFromArray v = HPoint3D (v@>0) (v@>1) (v@>2) (v@>3)
+    unsafeFromArray v = HPoint3D (v!0) (v!1) (v!2) (v!3)
 
 
 
@@ -131,7 +134,7 @@ data HLine = HLine !Double !Double !Double deriving (Eq, Show, Read)
 instance Shaped HLine where
     type Shape HLine = Dim3 Double
     toArray (HLine a b c) = vec3 a b c
-    unsafeFromArray v = HLine(v@>0) (v@>1) (v@>2)
+    unsafeFromArray v = HLine(v!0) (v!1) (v!2)
 
 
 -- | 3D line (provisional)
@@ -149,7 +152,7 @@ data HPlane = HPlane !Double !Double !Double !Double deriving (Eq, Show, Read)
 instance Shaped HPlane where
     type Shape HPlane = Dim4 Double
     toArray (HPlane a b c d) = vec4 a b c d
-    unsafeFromArray v = HPlane (v@>0) (v@>1) (v@>2) (v@>3)
+    unsafeFromArray v = HPlane (v!0) (v!1) (v!2) (v!3)
 
 
 --------------------------------------------------------------------------------
@@ -227,7 +230,16 @@ class Transformable t x
 
 apMat :: (Vectorlike a, Vectorlike b, Matrixlike t) => (Mat -> Mat) -> t -> [a] -> [b]
 apMat _ _ [] = []
-apMat g h xs = (map unsafeFromVector . toRows) . (<> (g.trans) (toMatrix h)) . fromRows . (map toVector) $ xs
+apMat g h xs = (map unsafeFromVector . toRows) . (<> (g.tr) (toMatrix h)) . fromRows . (map toVector) $ xs
+
+newtype Trust t = Trust t
+
+instance Transformable Homography x => Transformable (Trust (Matrix Double)) x
+  where
+    type TResult (Trust (Matrix Double)) x = TResult Homography x
+    apTrans (Trust m) = apTrans h
+      where
+        h = unsafeFromMatrix m :: Homography
 
 instance Transformable Homography [HPoint]
   where
@@ -254,7 +266,7 @@ instance Transformable Homography Point
 instance Transformable Homography [HLine]
   where
     type TResult Homography [HLine] = [HLine]
-    apTrans = apMat (inv.trans)
+    apTrans = apMat (inv.tr)
 
 instance Transformable Homography HLine
   where
@@ -265,7 +277,7 @@ instance Transformable Homography HLine
 instance Transformable Homography Conic
   where
     type TResult Homography Conic = Conic
-    apTrans (Homography t) (Conic c) = Conic (trans it <> c <> it)
+    apTrans (Homography t) (Conic c) = Conic (tr it <> c <> it)
       where
         it = inv t
 
@@ -278,7 +290,7 @@ instance Transformable Homography [Conic]
 instance Transformable Homography DualConic
   where
     type TResult Homography DualConic = DualConic
-    apTrans (Homography t) (DualConic c) = DualConic (t <> c <> trans t)
+    apTrans (Homography t) (DualConic c) = DualConic (t <> c <> tr t)
 
 instance Transformable Homography [DualConic]
   where
@@ -366,17 +378,17 @@ class BackTransformable t x
 instance BackTransformable Homography [HLine]
   where
     type BResult Homography [HLine] = [HLine]
-    bTrans = apMat trans
+    bTrans = apMat tr
 
 instance BackTransformable Homography3D [HPlane]
   where
     type BResult Homography3D [HPlane] = [HPlane]
-    bTrans = apMat trans
+    bTrans = apMat tr
 
 instance BackTransformable Camera [HLine]
   where
     type BResult Camera [HLine] = [HPlane]
-    bTrans = apMat trans
+    bTrans = apMat tr
 
 ---------------------------------------------------------------------
 
@@ -468,7 +480,7 @@ instance (Num (Vector t), Container Vector t) => Inhomog (Vector t)
     type HResult (Vector t) = Vector t
     homog v = vjoin [v,1]
 
-instance (Num (Vector t), Container Vector t) =>  Inhomog (Matrix t)
+instance (Num t, Num (Vector t), Container Vector t) =>  Inhomog (Matrix t)
   where
     type HResult (Matrix t) = Matrix t
     homog m = fromBlocks [[m , 1 ]]
@@ -493,21 +505,21 @@ instance Homog HPoint3D
     type IHResult HPoint3D = Point3D
     inhomog (HPoint3D x y z w) = Point3D (x/w) (y/w) (z/w)
 
-instance (Num (Vector t), Container Vector t) => Homog (Vector t)
+instance (Num (Vector t), Indexable (Vector t) t, Numeric t, Fractional t) => Homog (Vector t)
   where
     type IHResult (Vector t) = Vector t
-    inhomog v = subVector 0 d (v / scalar (v@>d))
+    inhomog v = subVector 0 d (v / scalar (v!d))
       where
-        d = dim v - 1
+        d = size v - 1
 
-instance (Num (Vector t), Container Vector t) => Homog (Matrix t)
+instance (Num (Vector t), Container Vector t, Fractional t) => Homog (Matrix t)
   where
     type IHResult (Matrix t) = Matrix t
     inhomog m = takeColumns (c-1) (m / dropColumns (c-1) m)
       where
         c = cols m
 
-instance (Show (UT.NArray i x), UT.Compat i, UT.Coord x) => Homog (UT.NArray i x) where
+instance (Show (UT.NArray i x), UT.Compat i, UT.Coord x, Fractional x) => Homog (UT.NArray i x) where
   type IHResult (UT.NArray i x) = UT.Name -> UT.NArray i x
   inhomog t n = (init `UT.onIndex` n) t / last (UT.parts t n)
 
@@ -563,12 +575,12 @@ crossMat :: Vec -> Mat
 crossMat v = (3><3) [ 0,-c, b,
                       c, 0,-a,
                      -b, a, 0]
-    where a = v@>0
-          b = v@>1
-          c = v@>2
+    where a = v!0
+          b = v!1
+          c = v!2
 
 meetLines :: HLine -> HLine -> HPoint
-meetLines l m = HPoint (v@>0) (v@>1) (v@>2) where v = crossMat (toVector l) <> (toVector m)
+meetLines l m = HPoint (v!0) (v!1) (v!2) where v = crossMat (toVector l) #> (toVector m)
 
 instance Meet HLine HLine where
     type HLine :\/: HLine = HPoint
@@ -577,7 +589,7 @@ instance Meet HLine HLine where
 -- point point
 
 joinPoints :: HPoint -> HPoint -> HLine
-joinPoints p q = HLine (v@>0) (v@>1) (v@>2) where v = crossMat (toVector p) <> (toVector q)
+joinPoints p q = HLine (v!0) (v!1) (v!2) where v = crossMat (toVector p) #> (toVector q)
 
 instance Join HPoint HPoint where
     type HPoint :/\: HPoint = HLine
@@ -644,7 +656,6 @@ instance Transformable Homography Polyline
     apTrans h (Closed ps) = Closed (apTrans h ps)
     apTrans h (Open ps)   = Open   (apTrans h ps)
 
-
 --------------------------------------------------------------------------------
 
 newtype Polygon = Polygon { polygonNodes :: [Point] }
@@ -673,6 +684,16 @@ instance Storable Segment where
     pokeElemOff pb 0 a
     pokeElemOff pb 1 b
 
+instance Transformable Homography [Segment]
+  where
+    type TResult Homography [Segment] = [Segment]
+    apTrans h = map (apTrans h)
+
+instance Transformable Homography Segment
+  where
+    type TResult Homography Segment = Segment
+    apTrans t (Segment p q) = Segment (apTrans t p) (apTrans t q)
+
 --------------------------------------------------------------------------------
 
 -- | linear interpolation between two points
@@ -696,6 +717,49 @@ rotPoint (Point cx cy) ang (Point x y) = Point (cx+rx) (cy+ry)
     dy = y-cy
     rx =  c*dx-s*dy
     ry = s*dx+c*dy
+
+--------------------------------------------------------------------------------
+
+-- | create a point from coordinates in the local reference frame defined by two points.
+
+localFrame
+    :: Point -- ^ origin
+    -> Point -- ^ a point the X axis
+    -> Double -> Double -- ^ absolute and relative (to length of segment) coordinates x
+    -> Double -> Double -- ^ absoulte and relative coordinates y
+    -> Point
+localFrame (Point x1 y1) (Point x2 y2) x xl y yl = Point x3 y3
+  where
+    ux' = x2-x1
+    uy' = y2-y1
+    un  = sqrt (ux'*ux'+uy'*uy')
+    ux  = ux'/un
+    uy  = uy'/un
+    vx = uy
+    vy = -ux
+    x3 = x1 + x*ux + xl*ux' + y*vx + yl*vx*un
+    y3 = y1 + x*uy + xl*uy' + y*vy + yl*vy*un
+
+-- | compute coordinates of a point in frame defined by a segment
+localCoords
+    :: Point -- ^ origin
+    -> Point -- ^ a point in X axis
+    -> Point -- ^ target point
+    -> Point -- ^ coordinates of target in this reference frame
+localCoords (Point x1 y1) (Point x2 y2) (Point x3 y3) = Point x y
+  where
+    ux' = x2-x1
+    uy' = y2-y1
+    un  = sqrt (ux'*ux'+uy'*uy')
+    ux  = ux'/un
+    uy  = uy'/un
+    vx = uy
+    vy = -ux
+    x = (x3-x1)*ux+(y3-y1)*uy
+    y = (x3-x1)*vx+(y3-y1)*vy
+
+
+--------------------------------------------------------------------------------
 
 
 -- | vector normal to a segment (to the "left")
@@ -771,6 +835,19 @@ segmentIntersection (Segment (Point x1 y1) (Point x2 y2)) (Segment (Point x3 y3)
     r | ok = Just (Point x y)
       | otherwise = Nothing
 
+-- including both extremes
+segmentIntersection' :: Segment -> Segment -> Maybe Point
+segmentIntersection' (Segment (Point x1 y1) (Point x2 y2)) (Segment (Point x3 y3) (Point x4 y4)) = r
+  where
+    d = (y4-y3)*(x2-x1)-(x4-x3)*(y2-y1)
+    u = ((x4-x3)*(y1-y3)-(y4-y3)*(x1-x3))/d
+    v = ((x2-x1)*(y1-y3)-(y2-y1)*(x1-x3))/d
+    ok = d /= 0 && 0 <= u && u <= 1 && 0 <= v && v <= 1
+    x = x1 + u*(x2-x1)
+    y = y1 + u*(y2-y1)
+    r | ok = Just (Point x y)
+      | otherwise = Nothing
+
 --------------------------------------------------------------------------------
 
 intersectionLineSegment :: HLine -> Segment -> Maybe Point
@@ -799,4 +876,35 @@ polygonSides = asSegments . Closed . polygonNodes
 
 -- | a list of vectors compactly stored as rows of a matrix
 type DMat = Matrix Double
+
+--------------------------------------------------------------------------------
+
+areaTriang :: Point -> Point -> Point -> Double
+areaTriang p1 p2 p3 = sqrt $ p * (p-d1) * (p-d2) * (p-d3)
+  where
+    d1 = distPoints p1 p2
+    d2 = distPoints p1 p3
+    d3 = distPoints p2 p3
+    p = (d1+d2+d3)/2
+
+--------------------------------------------------------------------------------
+
+bisector :: Segment -> HLine
+bisector (Segment (Point x0 y0) (Point x1 y1)) = gjoin dir cen
+  where
+    dx = x1-x0
+    dy = y1-y0
+    cx = (x0+x1)/2
+    cy = (y0+y1)/2
+    dir = HPoint (-dy) dx 0
+    cen = HPoint cx cy 1
+
+--------------------------------------------------------------------------------
+
+data KeyPoint = KeyPoint !Point !Double !Double
+
+instance Shaped KeyPoint where
+    type Shape KeyPoint = Dim4 Double
+    toArray (KeyPoint (Point x y) s a) = vector [x,y,s,a]
+    unsafeFromArray v = KeyPoint (Point (v!0) (v!1)) (v!2) (v!3)
 

@@ -13,6 +13,6 @@ data
 packages/devel
 packages/newdevel
 projects/examples/tests
-*~
 .nix/ippLocal/ipp*.tar.gz
+lib/ippicv_lnx
 

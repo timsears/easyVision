@@ -1,0 +1,33 @@
+Name:               hVision-CLK
+Version:            0.2.0
+License:            GPL
+License-file:       LICENSE
+Author:             Alberto Ruiz
+Maintainer:         Alberto Ruiz <aruiz@um.es>
+Stability:          experimental
+Homepage:           https://github.com/albertoruiz/easyVision
+Synopsis:           contour alignment
+Description:
+                    contour alignment
+
+Category:           Math
+
+cabal-version:      >=1.2
+build-type:         Simple
+
+extra-source-files:
+
+library
+    Build-Depends:      base, hVision-base, hVision-contours, hclipping,
+                        hmatrix, hVision-geometry, artools, hVision-opencv
+
+    hs-source-dirs:     src
+
+    Exposed-modules:    Contours.CLK
+                        Contours.CLKP
+                        Contours.Refine
+
+    ghc-prof-options:   -auto-all
+
+    ghc-options:        -Wall
+

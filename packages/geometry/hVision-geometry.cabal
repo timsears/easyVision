@@ -39,10 +39,11 @@ library
                         Vision.IO
                         Vision.LASBA
                         Vision.Autofrontal
+                        Vision.Ippe
 
     other-modules:
 
     ghc-prof-options:   -auto-all
 
---  ghc-options:        -Wall
+--    ghc-options:        -Wall
 

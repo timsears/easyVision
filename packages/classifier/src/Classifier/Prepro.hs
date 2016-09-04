@@ -36,7 +36,7 @@ module Classifier.Prepro (
 ) where
 
 import Util.Stat
-import Numeric.LinearAlgebra
+import Numeric.LinearAlgebra.HMatrix
 import Classifier.Base
 import Util.Misc(Vec,vec,Mat)
 
@@ -90,17 +90,17 @@ ofP prop other prob = prop prob' . other prob where
 mean :: Mat -> Vec
 mean = fst . meanCov
 
-cov :: Mat -> Mat
+cov :: Mat -> Herm Double
 cov  = snd . meanCov
 
 -- | Most discriminant linear features (LDA, Fisher)
 mdf :: Property Vec Vec
 mdf exs = f where
-    f x = (x - m) <> v'
+    f x = (x - m) <# v'
     n = length gs - 1
     gs = fst$ group exs
     v' = takeColumns n v
-    (_l,v) = geigSH' cm c
+    (_l,v) = geigSH cm c
     (m,c) = meanCov $ fromRows $ map fst exs
     cm = cov $ fromRows $ map (mean.fromRows) $ gs 
 
@@ -135,7 +135,7 @@ normalizeMinMax (mn,mx) exs = f where
 -- | Whitening transformation
 whitenAttr :: Property Vec Vec
 whitenAttr exs = f where
-    f x = w<>(x-m)
+    f x = w#>(x-m)
     w = whitener st
     m = meanVector st
     st = stat $ fromRows $ map fst exs
