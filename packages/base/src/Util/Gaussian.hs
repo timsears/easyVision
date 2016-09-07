@@ -124,7 +124,8 @@ sampleMixture :: [Seed] -> Int -> Mixture -> Mat
 sampleMixture seeds n mix = fromBlocks $ map return $ zipWith3 f seeds ns (map snd mix)
   where
     ns = map (round . (fromIntegral n*). fst) mix
-    f seed k (N m c) = gaussianSample seed k m (trustSym c)
+    --f seed k (N m c) = gaussianSample seed k m (trustSym c)
+    f seed k (N m c) = gaussianSample seed k m (c)
 
 ----------------------------------------------------------------------
 
@@ -168,7 +169,8 @@ em dat mix = fst $ -- debug "EM lik" snd $
 ----------------------------------------------------------------------
 
 initMix1 :: Mat -> Mixture
-initMix1 dat = [(1,N m (unSym c))] where (m,c) = meanCov dat
+--initMix1 dat = [(1,N m (unSym c))] where (m,c) = meanCov dat
+initMix1 dat = [(1,N m (c))] where (m,c) = meanCov dat
 
 diviG :: (Double, Gaussian) -> [(Double, Gaussian)]
 diviG (k,(N m c)) = [(0.5*k,N m1 c),(0.5*k, N m2 c)]

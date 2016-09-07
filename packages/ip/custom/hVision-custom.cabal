@@ -13,10 +13,11 @@ Category:           Math
 tested-with:        GHC ==7.6.3
 
 cabal-version:      >=1.2
-build-type:         Custom
+--build-type:         Custom
+build-type:         Simple                      
 
-extra-source-files: configure configure.hs
-extra-tmp-files:    hVision-custom.buildinfo
+--extra-source-files: configure configure.hs
+--extra-tmp-files:    hVision-custom.buildinfo
 
 
 library

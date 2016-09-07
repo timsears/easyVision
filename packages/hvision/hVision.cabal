@@ -20,8 +20,14 @@ extra-source-files:
 library
     Build-Depends:      base >= 3 && < 5,
                         hmatrix, hmatrix-gsl,
-                        hVision-base, hVision-contours, hVision-gui, hVision-ipp,
-                        hVision-geometry, hVision-custom, artools
+                        hVision-base,
+                        hVision-clipping,
+                        hVision-contours,
+                        hVision-custom,
+                        hVision-gui,
+                        hVision-ipp,
+                        hVision-geometry,
+                        artools
 
     hs-source-dirs:     src
 

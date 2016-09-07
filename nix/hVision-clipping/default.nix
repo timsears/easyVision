@@ -4,7 +4,7 @@
 mkDerivation {
   pname = "hVision-clipping";
   version = "0.1.0";
-  src = "${easyVisionSrc}/packages/contrib/clipping";
+  src = "${easyVisionSrc}/packages/contours/clipping";
   buildDepends = [
     artools base hmatrix hVision-base hVision-contours
   ];
