@@ -59,7 +59,7 @@ mkVProb VPParam{..} seed = r where
     points3D = homogT "x" $ fromMatrix Co Contra mpoints3D !"nx"
 
     targets  = toRows $ uniformSample seedD numCams [(-0.1,0.1),(-0.1,0.1),(-0.1,0.1)]
-    cenDirs = map unitary $ toRows $ uniformSample seedC1 numCams [(-1,1),(-1,1),(-1,1)]
+    cenDirs = map LA.normalize $ toRows $ uniformSample seedC1 numCams [(-1,1),(-1,1),(-1,1)]
     cenDist = toList $ randomVector seedC2 Uniform numCams
     centers = zipWith f cenDist cenDirs
         where f s d = LA.scalar (minDist + s * (maxDist-minDist)) * d
@@ -130,8 +130,6 @@ mkHelix VPParam{..} seed = r where
     points3D = homogT "x" $ fromMatrix Co Contra mpoints3D !"nx"
 
     targets  = toRows $ uniformSample seedD numCams [(-0.1,0.1),(-0.1,0.1),(-0.1,0.1)]
---    cenDirs = map unitary $ toRows $ uniformSample seedC1 numCams [(-1,1),(-1,1),(-1,1)]
---    cenDist = toList $ randomVector seedC2 Uniform numCams
     centers = [fromList [x t,y t,z t] | t <- (id $ toList $ linspace numCams (0,2*pi))]
         where x t = minDist * cos t
               y t = minDist * sin t

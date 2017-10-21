@@ -21,7 +21,7 @@ module Classifier.Regression (
     msError
 ) where
 
-import Numeric.LinearAlgebra.HMatrix
+import Numeric.LinearAlgebra.HMatrix hiding (normalize)
 import Util.Stat
 import Util.Misc(Mat,Vec)
 import Util.Statistics(mean)

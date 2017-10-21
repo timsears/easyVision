@@ -22,5 +22,5 @@ cabal.project.local
 *~
 \#*\#
 .\#*
-.*/result/
+result
 TAGS

@@ -91,7 +91,8 @@ mean :: Mat -> Vec
 mean = fst . meanCov
 
 cov :: Mat -> Herm Double
-cov  = sym . snd . meanCov
+--cov  = sym . snd . meanCov
+cov  = snd . meanCov
 
 -- | Most discriminant linear features (LDA, Fisher)
 mdf :: Property Vec Vec
@@ -100,7 +101,8 @@ mdf exs = f where
     n = length gs - 1
     gs = fst$ group exs
     v' = takeColumns n v
-    (_l,v) = geigSH cm (sym c)
+    --(_l,v) = geigSH cm (sym c)
+    (_l,v) = geigSH cm c
     (m,c) = meanCov $ fromRows $ map fst exs
     cm = cov $ fromRows $ map (mean.fromRows) $ gs 
 

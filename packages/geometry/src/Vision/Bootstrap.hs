@@ -163,7 +163,7 @@ estimatePointsCenters n rots p = (newCams sol, newCams (-sol)) where
       where inforank m = (rows m, cols m)
     newcens s = toRows $ dropRows (pmax) s
     newCams s = zipWith f rots (newcens s) where f r c = r ¦ asColumn (-r #> c)
-    hv (Point x y) = unitary (vec [x,y,1])
+    hv (Point x y) = normalize (vec [x,y,1])
 
 -----------------------------------------------------------------
 

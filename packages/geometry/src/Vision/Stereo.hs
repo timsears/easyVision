@@ -40,6 +40,7 @@ module Vision.Stereo
 ) where
 
 import Numeric.LinearAlgebra.HMatrix
+import Numeric.LinearAlgebra.HMatrix as LA
 import Numeric.GSL
 import Util.Homogeneous
 import Util.Estimation
@@ -190,7 +191,7 @@ triangulateH cms = ps
 
 
 cameraDirection :: Mat -> Vec
-cameraDirection m = unitary (scalar (det a) * m3) where
+cameraDirection m = LA.normalize (scalar (det a) * m3) where
     a = takeColumns 3 m
     [_,_,m3] = toRows a
 
@@ -242,7 +243,7 @@ fundamentalFromCameras p p' = asMat e' <> p' <> pinv p where
 stereoRectifiers :: Mat -> [[Double]] -> [[Double]] -> (Mat, Mat)
 stereoRectifiers fund pts pts' = (h,h') where    -- HZ p.307
     (e,e') = epipoles fund
-    [x,y,w] = toList (unitary e')
+    [x,y,w] = toList (LA.normalize e')
     x' = x/w
     y' = y/w
     roll = if abs w < 1E-6

@@ -220,8 +220,8 @@ cameraFromHomogZ0 mbf c = res where
     [s1,s2,s3] = toColumns s
     sc = norm s1
     t = s3 / scalar sc
-    r1 = unitary s1
-    r3 = unitary (cross s1 s2)
+    r1 = LA.normalize s1
+    r3 = LA.normalize (cross s1 s2)
     r2 = cross r3 r1
     rot = fromColumns [r1,r2,r3]
     cen1 = - (trans rot #> t)
@@ -534,7 +534,7 @@ imagOfCircPt e1 e2 = fst (selectSol m1 m2 (intersectionEllipses c1 c2))
     [c1,c2] = map conicMatrix [e1,e2]
 
 getHorizs pts = map linf pts where
-    linf (x,y) = toList $ unitary $ snd $ fromComplex $ cross v (conj v)
+    linf (x,y) = toList $ LA.normalize $ snd $ fromComplex $ cross v (conj v)
         where v = fromList [x,y,1]
 
 selectSol (x1,y1) (x2,y2) pts = (ij,other) where
@@ -718,7 +718,7 @@ projectionDerivAtH (rt,rt1,rt2,rt3,m4,m5,m6,cx,cy,cz) pt@(toList -> [x',y',z',w'
 epipolarMiniJac :: CamJacobianData -> CamJacobianData -> (Mat,Mat,Mat)
 epipolarMiniJac (r,r1,r2,r3,_,_,_,cx,cy,cz) (q,q1,q2,q3,_,_,_,dx,dy,dz) = result where
     c21 = fromList [dx-cx,dy-cy,dz-cz]
-    t = unitary c21
+    t = LA.normalize c21
     t1 = derNor c21 (vec [1,0,0])
     t2 = derNor c21 (vec [0,1,0])
     t3 = derNor c21 (vec [0,0,1])

@@ -25,6 +25,7 @@ module Vision.Autofrontal (
 -- experiments on planar rectification
 
 import Numeric.LinearAlgebra.HMatrix
+import Numeric.LinearAlgebra.HMatrix as LA
 import Numeric.GSL.Minimization
 import Util.Homogeneous
 import Vision.Camera
@@ -156,9 +157,9 @@ estimateFTransfer (r,y) h = res
     hp = tr h #> horiz  -- horiz in view k
     d = mA #> hp
     n = cross hp d 
-    a = inHomog $ unitary $ h #> n
-    b = inHomog $ unitary $ h #> d
-    ni = inHomog $ unitary $ cross horiz (mA #> horiz)
+    a = inHomog $ LA.normalize $ h #> n
+    b = inHomog $ LA.normalize $ h #> d
+    ni = inHomog $ LA.normalize $ cross horiz (mA #> horiz)
     yh = norm_2 ni
     x1 = norm_2 (a-ni)
     x2 = norm_2 (b-ni)

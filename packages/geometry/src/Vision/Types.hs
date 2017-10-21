@@ -77,7 +77,7 @@ rangePts p = [0.. nPts p - 1]
 -- | prepare an efficient function to get the homogeneous projection of point i in view j with [0,0,0] for missing data.
 fastAccess :: [Proj] -> (Int,Int) -> Vec
 fastAccess p = f where
-    m = M.map (\(Point x y) -> unitary (vec [x,y,1])) (M.fromList p)
+    m = M.map (\(Point x y) -> normalize (vec [x,y,1])) (M.fromList p)
     f ij = M.findWithDefault z ij m
     z = vec [0,0,0]
 
