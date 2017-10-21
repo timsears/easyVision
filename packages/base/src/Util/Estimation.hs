@@ -38,7 +38,7 @@ module Util.Estimation
 -- , estimateProjective
 ) where
 
-import Numeric.LinearAlgebra.HMatrix
+import Numeric.LinearAlgebra.HMatrix 
 import Util.Covariance
 import Util.Homogeneous
 import Data.List(transpose,nub,maximumBy,genericLength,sortBy,minimumBy)
@@ -246,7 +246,7 @@ robustLocation dis l = mins where
 intersectionManyLines :: [Vec] -> Vec
 intersectionManyLines ls | length ls > 1 = fst (homogSolve a)
                          | otherwise = vec [0,0,1]
-  where a = fromRows $ map unitary ls
+  where a = fromRows $ map normalize ls
 
 -- [Point2] -> Line2
 -- | line passing through several points

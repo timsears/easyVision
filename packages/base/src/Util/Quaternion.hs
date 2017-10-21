@@ -6,12 +6,13 @@ module Util.Quaternion(
     axisToQuat,
     quatToAxis,
     rotToAxis,
---    getRotation,
+    --getRotation,
     getRotationHL,
     slerp
 ) where
 
-import Numeric.LinearAlgebra.HMatrix
+import Numeric.LinearAlgebra.HMatrix hiding (normalize)
+import qualified Numeric.LinearAlgebra as LA 
 import Data.List(minimumBy,maximumBy)
 import Data.Function(on)
 import Util.Misc(vec,Vec,Mat)
@@ -53,7 +54,7 @@ a .*. b = normalize (a * b)
 
 axisToQuat :: Double -> Vec -> Quaternion
 axisToQuat phi axis = Quat { qs = cos (phi/2), qv = sin (phi/2) `scale` v }
-    where v = unitary axis
+    where v = LA.normalize axis
 
 --------------------------------------
 

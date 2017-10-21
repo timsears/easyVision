@@ -30,19 +30,13 @@ import System.Process ( system )
 import Data.List ( isSuffixOf, intercalate )
 import Data.List.Split ( splitOn )
 import Numeric.LinearAlgebra.HMatrix ( Matrix, rows, cols )
-import Numeric.LinearAlgebra.Devel
+import Numeric.LinearAlgebra.Devel (cmat, applyRaw, createMatrix, (#|), MatrixOrder (..))
 import Data.Char ( toLower )
 import qualified Data.ByteString as BS ( writeFile, append )
 import qualified Data.ByteString.Char8 as BSC ( pack )
 import Util.Time ( formattedTime )
 import System.IO.Unsafe(unsafePerformIO)
 
-infixl 1 #
-(#) :: TransArray c => TransRaw c b -> c -> b
-a # b = applyRaw a b
-{-# INLINE (#) #-}
-
-----------------------------------------------------------------------
 
 mat2img :: Matrix Float -> ImageFloat
 mat2img m = unsafePerformIO $ do
@@ -52,7 +46,7 @@ mat2img m = unsafePerformIO $ do
         g r _ p = do
             sequence_ $ zipWith (f p) ps [0..fromIntegral r-1]
             return 0
-    g # (cmat m) #|"mat2img"
+    (applyRaw (cmat m) id  g) #| "mat2img" 
     return im
 
 
@@ -66,7 +60,7 @@ img2mat im = unsafePerformIO $ do
             return 0
     m <- createMatrix RowMajor r c
     withImage im $ do
-        g # (cmat m) #|"img2mat"
+        (applyRaw (cmat m) id g ) #| "mat2img" 
     return m
 
 ----------------------------------------------------------------------

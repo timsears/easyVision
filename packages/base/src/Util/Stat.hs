@@ -21,7 +21,7 @@ module Util.Stat (
 
 ) where
 
-import Numeric.LinearAlgebra.HMatrix hiding (eigenvalues)
+import Numeric.LinearAlgebra.HMatrix hiding (eigenvalues,normalize)
 import Util.Misc(Vec,Mat)
 
 meanRow :: Mat -> Vec

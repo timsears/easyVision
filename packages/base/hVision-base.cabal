@@ -46,7 +46,7 @@ library
     Exposed-modules:    
                         Util.LazyIO
                         Util.Rotation
-                        Util.Estimation
+                        Util.Estimation 
                         Util.Homogeneous
                         Util.Small
                         Util.Geometry
