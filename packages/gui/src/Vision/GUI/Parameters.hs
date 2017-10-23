@@ -303,11 +303,11 @@ lp pref name = litE (stringL ("--"++pref++name))
 
 ---------------------------------------------------------
 
-mkField :: (String, String) -> VarStrictTypeQ
-mkField (n,t) = varStrictType (mkName n) $ strictType notStrict (conT (mkName t))
+mkField :: (String, String) -> VarBangTypeQ
+mkField (n,t) = varBangType (mkName n) $ bangType notStrict (conT (mkName t))
 
 createRec :: String -> [(String, String)] -> DecQ
-createRec name fields = dataD (cxt[]) (mkName name) [] [recC (mkName name) (map mkField fields)] [mkName "Show"]
+createRec name fields = dataD (cxt[]) (mkName name) [] Nothing [recC (mkName name) (map mkField fields)] (mapM conT [mkName "Show"])
 
 
 {- | automatically create a data type intended to hold parameters for a certain computation.
