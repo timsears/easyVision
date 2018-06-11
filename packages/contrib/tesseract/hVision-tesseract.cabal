@@ -20,7 +20,7 @@ flag redir
     default:        False
 
 library
-    Build-Depends:      base, hVision, process, temporary, filepath, directory
+    Build-Depends:      base, hVision, hVision-base, process, temporary, filepath, directory
 
     hs-source-dirs:     src
 

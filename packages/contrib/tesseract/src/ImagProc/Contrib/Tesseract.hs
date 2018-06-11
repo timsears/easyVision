@@ -21,9 +21,8 @@ module ImagProc.Contrib.Tesseract (
 where
 
 ----------------------------------------------------------------------
-import Image.Processing
-
-import Image.Processing                       -- (ImageGray,saveGray)
+import Image
+import Image.Devel
 import System.FilePath.Posix
 import System.Directory
 import System.IO.Temp
@@ -38,13 +37,13 @@ espeak text = do
 -}
 ----------------------------------------------------------------------
 
-tesseract :: ImageGray -> String
-  unsafePerformIO $ withSystemTempFile "tif" $
-tesseract im =
+tesseract :: Image Gray -> String
+
+tesseract im =  unsafePerformIO $ withSystemTempFile "tif" $
   (\f _h  -> do
       let f' = replaceExtension f "txt"
           fbase = dropExtension f
-      saveImage f im
+      saveImage f (gray2rgb im)
       _ <- system $ "tesseract " ++ f ++ " "
 #ifdef REDIR
            ++ fbase ++ " -l eng   2> /dev/null"
