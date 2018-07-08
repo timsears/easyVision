@@ -11,12 +11,21 @@ Description:
  Image processing using Intel's IPP
 
 Category:           Math
-tested-with:        GHC ==6.10.4, GHC ==6.12.1
+tested-with:        
 
-cabal-version:      >=1.2
-build-type:         Custom
+-- cabal-version:      >=2.0
+default-language:   Haskell2010
+                    
+--build-type:         Custom
+build-type:         Simple                      
 
-extra-source-files: configure configure.hs
+custom-setup
+  setup-depends: Cabal, base
+
+--hs-source-dirs: ., src  
+                    
+extra-source-files: -- configure
+                    -- src/configure.hs
                     src/Image/Processing/IPP/adapter.hs
                     src/Image/Processing/IPP/Parser.hs
                     src/Image/Processing/IPP/functions.txt

@@ -1,0 +1,9 @@
+packages: base/
+	  tools/
+	  classifier/
+    	  contours/clipping/
+    	  contours/contours/
+          ip/custom/
+          geometry/
+    	  gui/
+	  ip/ipp/
