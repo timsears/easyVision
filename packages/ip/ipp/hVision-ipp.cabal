@@ -7,25 +7,15 @@ Maintainer:         Alberto Ruiz <aruiz@um.es>
 Stability:          experimental
 Homepage:           https://github.com/albertoruiz/easyVision
 Synopsis:           Image processing based on IPP
-Description:
- Image processing using Intel's IPP
-
+Description:        Image processing using Intel's IPP
 Category:           Math
-tested-with:        
 
--- cabal-version:      >=2.0
-default-language:   Haskell2010
-                    
---build-type:         Custom
-build-type:         Simple                      
-
-custom-setup
-  setup-depends: Cabal, base
-
---hs-source-dirs: ., src  
-                    
-extra-source-files: -- configure
-                    -- src/configure.hs
+cabal-version:      >=1.24
+build-type:         Custom
+--build-type:         Simple                      
+                
+extra-source-files: configure
+                    configure.hs
                     src/Image/Processing/IPP/adapter.hs
                     src/Image/Processing/IPP/Parser.hs
                     src/Image/Processing/IPP/functions.txt
@@ -33,6 +23,9 @@ extra-source-files: -- configure
 
 extra-tmp-files:    hVision-ipp.buildinfo
 
+custom-setup
+ setup-depends: Cabal, base
+                    
 library
     Build-Depends:      base,
                         hVision-base,
@@ -52,7 +45,6 @@ library
                         Image.Processing.IPP.AutoGen
                         Image.Processing.IPP.Auto
 
-
     c-sources:          src/Image/Processing/IPP/auxIpp.c
                         src/Image/Processing/IPP/ptr_adapt.c
 
@@ -61,3 +53,4 @@ library
 
     ghc-options:        -Wall -fno-warn-missing-signatures -fno-warn-name-shadowing
 
+    default-language:    Haskell2010

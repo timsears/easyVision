@@ -33,7 +33,7 @@ module Image.Processing(
     -- * matching
     crossCorr, G.crossCorrLoc, sqrDist,
     -- * contours
-    contours, localContours,
+    contours, localContours, otsuContours,
     -- * color transformations
     rgbToGray, rgbToHSV, hsvToRGB, yCbCrToRGB, rgbToYCbCr,
     twistColors, G.Channels(..), G.channelsFromRGB, G.channelsFromYUYV, G.grayscale, G.grayf,

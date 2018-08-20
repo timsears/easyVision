@@ -7,3 +7,8 @@ packages: base/
           geometry/
     	  gui/
 	  ip/ipp/
+	  hvision/
+	  contrib/tesseract
+	  
+
+	  
